@@ -1,0 +1,383 @@
+-- ==============================================================================
+-- LIGHTHUB: ULTIMATE SCRIPT (REMOVED AUTO FARM ITEMS)
+-- ==============================================================================
+
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+
+local localPlayer = Players.LocalPlayer or Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
+local playerGui = localPlayer:WaitForChild("PlayerGui")
+local camera = workspace.CurrentCamera
+
+local function safeParent(gui)
+	local success = pcall(function()
+		if syn and syn.protect_gui then
+			syn.protect_gui(gui)
+		end
+		if gethui then
+			gui.Parent = gethui()
+		else
+			gui.Parent = CoreGui
+		end
+	end)
+	if not success then
+		gui.Parent = playerGui
+	end
+end
+
+-- Helper: Check kung nasa laro na ba
+local function isInGame()
+	local char = localPlayer.Character
+	if not char or not char:FindFirstChild("HumanoidRootPart") then return false end
+	local humanoid = char:FindFirstChildOfClass("Humanoid")
+	if not humanoid or humanoid.Health <= 0 then return false end
+	return true
+end
+
+-- Main ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "LightHub_Panel"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+safeParent(screenGui)
+
+-- Main Frame (Panel) - Rectangular Format (195 height)
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 320, 0, 195)
+mainFrame.Position = UDim2.new(0.5, -160, 0.3, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+mainFrame.BorderColor3 = Color3.fromRGB(120, 100, 255)
+mainFrame.BorderSizePixel = 2
+mainFrame.ZIndex = 100
+mainFrame.Parent = screenGui
+Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 8)
+
+-- Top Bar / Header
+local topBar = Instance.new("Frame")
+topBar.Size = UDim2.new(1, 0, 0, 30)
+topBar.BackgroundColor3 = Color3.fromRGB(35, 30, 50)
+topBar.BorderSizePixel = 0
+topBar.ZIndex = 101
+topBar.Parent = mainFrame
+Instance.new("UICorner", topBar).CornerRadius = UDim.new(0, 8)
+
+-- Title Label ("LightHub")
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(0, 80, 1, 0)
+titleLabel.Position = UDim2.new(0, 10, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "LightHub"
+titleLabel.TextColor3 = Color3.fromRGB(200, 180, 255)
+titleLabel.TextSize = 14
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.ZIndex = 102
+titleLabel.Parent = topBar
+
+-- Discord Link Label
+local discordLabel = Instance.new("TextLabel")
+discordLabel.Size = UDim2.new(1, -120, 1, 0)
+discordLabel.Position = UDim2.new(0, 90, 0, 0)
+discordLabel.BackgroundTransparency = 1
+discordLabel.Text = "https://discord.gg/Bwvb3wdQy"
+discordLabel.TextColor3 = Color3.fromRGB(150, 180, 255)
+discordLabel.TextSize = 11
+discordLabel.Font = Enum.Font.SourceSansItalic
+discordLabel.TextXAlignment = Enum.TextXAlignment.Left
+discordLabel.ZIndex = 102
+discordLabel.Parent = topBar
+
+-- Show / Unshow Button (-)
+local unshowBtn = Instance.new("TextButton")
+unshowBtn.Size = UDim2.new(0, 24, 0, 24)
+unshowBtn.Position = UDim2.new(1, -28, 0, 3)
+unshowBtn.BackgroundColor3 = Color3.fromRGB(60, 45, 80)
+unshowBtn.Text = "-"
+unshowBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+unshowBtn.TextSize = 14
+unshowBtn.Font = Enum.Font.SourceSansBold
+unshowBtn.ZIndex = 102
+unshowBtn.Parent = topBar
+Instance.new("UICorner", unshowBtn).CornerRadius = UDim.new(0, 4)
+
+-- Container para sa laman ng panel
+local container = Instance.new("Frame")
+container.Size = UDim2.new(1, -16, 1, -42)
+container.Position = UDim2.new(0, 8, 0, 34)
+container.BackgroundColor3 = Color3.fromRGB(15, 15, 22)
+container.BorderSizePixel = 0
+container.ZIndex = 101
+container.Parent = mainFrame
+Instance.new("UICorner", container).CornerRadius = UDim.new(0, 6)
+
+-- ==============================================================================
+-- UI ROWS: LABELS & TOGGLE BUTTONS
+-- ==============================================================================
+
+-- 1. Role ESP
+local espLabel = Instance.new("TextLabel")
+espLabel.Size = UDim2.new(0, 150, 0, 35)
+espLabel.Position = UDim2.new(0, 12, 0, 10)
+espLabel.BackgroundTransparency = 1
+espLabel.Text = "Role ESP"
+espLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+espLabel.TextSize = 14
+espLabel.Font = Enum.Font.SourceSansBold
+espLabel.TextXAlignment = Enum.TextXAlignment.Left
+espLabel.ZIndex = 102
+espLabel.Parent = container
+
+local espBtn = Instance.new("TextButton")
+espBtn.Size = UDim2.new(0, 110, 0, 36)
+espBtn.Position = UDim2.new(1, -120, 0, 10)
+espBtn.BackgroundColor3 = Color3.fromRGB(130, 40, 40)
+espBtn.Text = "OFF"
+espBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+espBtn.TextSize = 13
+espBtn.Font = Enum.Font.SourceSansBold
+espBtn.ZIndex = 102
+espBtn.Parent = container
+Instance.new("UICorner", espBtn).CornerRadius = UDim.new(0, 6)
+
+-- 2. Sheriff Aimbot
+local aimbotLabel = Instance.new("TextLabel")
+aimbotLabel.Size = UDim2.new(0, 150, 0, 35)
+aimbotLabel.Position = UDim2.new(0, 12, 0, 55)
+aimbotLabel.BackgroundTransparency = 1
+aimbotLabel.Text = "Sheriff Aimbot"
+aimbotLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+aimbotLabel.TextSize = 14
+aimbotLabel.Font = Enum.Font.SourceSansBold
+aimbotLabel.TextXAlignment = Enum.TextXAlignment.Left
+aimbotLabel.ZIndex = 102
+aimbotLabel.Parent = container
+
+local aimbotBtn = Instance.new("TextButton")
+aimbotBtn.Size = UDim2.new(0, 110, 0, 36)
+aimbotBtn.Position = UDim2.new(1, -120, 0, 55)
+aimbotBtn.BackgroundColor3 = Color3.fromRGB(130, 40, 40)
+aimbotBtn.Text = "OFF"
+aimbotBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+aimbotBtn.TextSize = 13
+aimbotBtn.Font = Enum.Font.SourceSansBold
+aimbotBtn.ZIndex = 102
+aimbotBtn.Parent = container
+Instance.new("UICorner", aimbotBtn).CornerRadius = UDim.new(0, 6)
+
+-- 3. Murder Kill All
+local killAllLabel = Instance.new("TextLabel")
+killAllLabel.Size = UDim2.new(0, 150, 0, 35)
+killAllLabel.Position = UDim2.new(0, 12, 0, 100)
+killAllLabel.BackgroundTransparency = 1
+killAllLabel.Text = "Murder Kill All"
+killAllLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+killAllLabel.TextSize = 14
+killAllLabel.Font = Enum.Font.SourceSansBold
+killAllLabel.TextXAlignment = Enum.TextXAlignment.Left
+killAllLabel.ZIndex = 102
+killAllLabel.Parent = container
+
+local killAllBtn = Instance.new("TextButton")
+killAllBtn.Size = UDim2.new(0, 110, 0, 36)
+killAllBtn.Position = UDim2.new(1, -120, 0, 100)
+killAllBtn.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+killAllBtn.Text = "EXECUTE"
+killAllBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+killAllBtn.TextSize = 13
+killAllBtn.Font = Enum.Font.SourceSansBold
+killAllBtn.ZIndex = 102
+killAllBtn.Parent = container
+Instance.new("UICorner", killAllBtn).CornerRadius = UDim.new(0, 6)
+
+-- ==============================================================================
+-- LOGICS & FUNCTIONS
+-- ==============================================================================
+local espEnabled = false
+local aimbotEnabled = false
+
+local function getPlayerRole(p)
+	local char = p.Character
+	local backpack = p:FindFirstChildOfClass("Backpack")
+	
+	local containers = {char, backpack}
+	for _, containerRef in ipairs(containers) do
+		if containerRef then
+			for _, item in ipairs(containerRef:GetChildren()) do
+				if item:IsA("Tool") then
+					local tName = string.lower(item.Name)
+					if string.find(tName, "gun") or string.find(tName, "revolver") or string.find(tName, "sheriff") then
+						return "Sheriff"
+					elseif string.find(tName, "knife") or string.find(tName, "blade") or string.find(tName, "dagger") or string.find(tName, "corrupt") then
+						return "Murderer"
+					end
+				end
+			end
+		end
+	end
+	
+	if p:GetAttribute("Role") then
+		local attrRole = string.lower(tostring(p:GetAttribute("Role")))
+		if string.find(attrRole, "murder") then return "Murderer" end
+		if string.find(attrRole, "sheriff") then return "Sheriff" end
+	end
+	
+	return "Innocent"
+end
+
+local function getPlayerRoleColor(p)
+	local role = getPlayerRole(p)
+	if role == "Sheriff" then
+		return Color3.fromRGB(0, 120, 255)
+	elseif role == "Murderer" then
+		return Color3.fromRGB(255, 50, 50)
+	end
+	return Color3.fromRGB(0, 255, 0)
+end
+
+local function isLocalSheriff()
+	if not isInGame() then return false end
+	return getPlayerRole(localPlayer) == "Sheriff"
+end
+
+local function isLocalMurderer()
+	if not isInGame() then return false end
+	return getPlayerRole(localPlayer) == "Murderer"
+end
+
+-- Role ESP Toggle
+espBtn.MouseButton1Click:Connect(function()
+	if not isInGame() then return end
+	espEnabled = not espEnabled
+	espBtn.Text = espEnabled and "ON" or "OFF"
+	espBtn.BackgroundColor3 = espEnabled and Color3.fromRGB(40, 130, 70) or Color3.fromRGB(130, 40, 40)
+	if not espEnabled then
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p.Character and p.Character:FindFirstChild("LightHub_RoleESP") then
+				p.Character.LightHub_RoleESP:Destroy()
+			end
+		end
+	end
+end)
+
+-- Aimbot Toggle
+aimbotBtn.MouseButton1Click:Connect(function()
+	if not isInGame() then return end
+	aimbotEnabled = not aimbotEnabled
+	aimbotBtn.Text = aimbotEnabled and "ON" or "OFF"
+	aimbotBtn.BackgroundColor3 = aimbotEnabled and Color3.fromRGB(40, 130, 70) or Color3.fromRGB(130, 40, 40)
+end)
+
+-- 15-SECOND LOOP KILL ALL
+killAllBtn.MouseButton1Click:Connect(function()
+	if not isInGame() or not isLocalMurderer() then return end
+	
+	killAllBtn.Text = "KILLING..."
+	task.spawn(function()
+		local startTime = os.clock()
+		while (os.clock() - startTime) < 15 and isInGame() do
+			local myChar = localPlayer.Character
+			local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+			if not myRoot then break end
+
+			for _, p in ipairs(Players:GetPlayers()) do
+				if p ~= localPlayer and p.Character then
+					local targetRoot = p.Character:FindFirstChild("HumanoidRootPart")
+					local targetHumanoid = p.Character:FindFirstChildOfClass("Humanoid")
+					if targetRoot and targetHumanoid and targetHumanoid.Health > 0 then
+						pcall(function()
+							myRoot.CFrame = targetRoot.CFrame * CFrame.new(0, 0, 1.2)
+						end)
+						task.wait(0.15)
+					end
+				end
+			end
+			task.wait(0.1)
+		end
+		killAllBtn.Text = "EXECUTE"
+	end)
+end)
+
+-- Render Loop
+RunService.RenderStepped:Connect(function()
+	if not isInGame() then return end
+	
+	-- Role ESP
+	if espEnabled then
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p ~= localPlayer and p.Character then
+				local char = p.Character
+				if char:FindFirstChildOfClass("Humanoid") then
+					local hl = char:FindFirstChild("LightHub_RoleESP")
+					if not hl then
+						hl = Instance.new("Highlight")
+						hl.Name = "LightHub_RoleESP"
+						hl.Adornee = char
+						hl.Parent = char
+					end
+					hl.FillColor = getPlayerRoleColor(p)
+					hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+					hl.FillTransparency = 0.5
+				end
+			end
+		end
+	end
+	
+	-- Sheriff Aimbot
+	if aimbotEnabled and isLocalSheriff() then
+		local targetMurderer = nil
+		local shortestDistance = math.huge
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p ~= localPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+				local humanoid = p.Character:FindFirstChildOfClass("Humanoid")
+				if humanoid and humanoid.Health > 0 and getPlayerRole(p) == "Murderer" then
+					local distance = (p.Character.HumanoidRootPart.Position - localPlayer.Character.HumanoidRootPart.Position).Magnitude
+					if distance < shortestDistance then
+						shortestDistance = distance
+						targetMurderer = p
+					end
+				end
+			end
+		end
+		if targetMurderer and targetMurderer.Character and targetMurderer.Character:FindFirstChild("HumanoidRootPart") then
+			local targetPart = targetMurderer.Character.HumanoidRootPart
+			local myRoot = localPlayer.Character.HumanoidRootPart
+			camera.CFrame = CFrame.new(camera.CFrame.Position, targetPart.Position)
+			myRoot.CFrame = CFrame.new(myRoot.Position, Vector3.new(targetPart.Position.X, myRoot.Position.Y, targetPart.Position.Z))
+		end
+	end
+end)
+
+-- Minimize / Unshow Toggle Logic
+local isUnshown = false
+unshowBtn.MouseButton1Click:Connect(function()
+	isUnshown = not isUnshown
+	mainFrame.Size = isUnshown and UDim2.new(0, 320, 0, 30) or UDim2.new(0, 320, 0, 195)
+	container.Visible = not isUnshown
+	unshowBtn.Text = isUnshown and "+" or "-"
+end)
+
+-- Draggable / Movable System
+local dragging, dragStart, startPos
+topBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = mainFrame.Position
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		local delta = input.Position - dragStart
+		mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = false
+	end
+end)
